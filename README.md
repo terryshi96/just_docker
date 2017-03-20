@@ -17,12 +17,21 @@ redis采用容器的方式
 
 ```
 docker-compose build
-docker-compose run web rails new . --api --force --database=postgresql --skip-bundle
-docker-compose run web rake db:create
-docker-compose run web rake db:migrate
+docker-compose run --rm web rails new . --api --force --database=postgresql --skip-bundle
+docker-compose run --rm web rake db:migrate
 ```
-
+添加别名
+```
+alias dc="docker-compose"
+alias dcb="docker-compose build"
+alias dcr="docker-compose run --rm"
+```
+```
+#清理虚悬镜像
+docker rmi -f $(docker images -q -f dangling=true)
+#清理停止容器
+docker rm $(docker ps -a -q)
+```
 
 问题
 redis\postgresql\mysql也是容器部署? 如何做redis\postgresql\mysql的集群?
-

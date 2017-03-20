@@ -2,5 +2,5 @@
 .dockerignore
 .gitignore
 README.md
-redis
-redis/*
+data
+data/*

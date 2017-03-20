@@ -8,7 +8,7 @@ RUN mv /etc/apt/sources.list /etc/apt/sources.list.bak && \
     echo "deb-src http://mirrors.163.com/debian/ jessie-proposed-updates main non-free contrib" >>/etc/apt/sources.list
 
 #安装环境
-RUN apt-get update -qq && apt-get install -y build-essential libpq-dev nodejs imagemagick && rm -rf /var/lib/apt/lists/*
+RUN apt-get update -qq && apt-get install -y build-essential libpq-dev nodejs imagemagick && apt-get clean && rm -rf /var/lib/apt/lists/*
 
 #定义环境变量 根据我的理解 在使用docker的情况下 应该用production模式保证与线上环境一致
 ENV HOME /rails_demo

@@ -9,9 +9,7 @@ https://jxus37ad.mirror.aliyuncs.com
 redis采用容器的方式
 数据库由于涉及到数据的共享没有在每个compose_project单独起一个postgresql而是采用外部连接的方式
 
-所有的构建镜像操作全部在CI/CD系统,服务器端只进行镜像的拉取更新
-
-由于要区分不同环境(这里不是指开发和生产环境,而是不同的生产环境),任需要采取environments的形式
+所有的构建镜像操作全部在CI/CD系统,服务器端只进行镜像的拉取更新(通过触发ansible分发)
 
 ### 测试
 

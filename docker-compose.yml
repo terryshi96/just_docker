@@ -8,24 +8,24 @@ services:
     command: bundle exec puma
     ports:
       - "3000:3000"
-#    links:
-#      - redis
-#      - postgresql
+    links:
+      - redis
+      - postgresql
 
-#  redis:
-#    build: redis/
-#    environment:
-#      PASSWORD:
-#    command: redis-server --requirepass $PASSWORD
-#    volumes:
-#      - ./redis/data:/data
+  redis:
+    build: redis/
+    environment:
+      PASSWORD:
+    command: redis-server --requirepass $PASSWORD
+    volumes:
+      - ./redis/data:/data
 
-#  postgresql:
-#    build: /postgresql
-#    environment:
-#      POSTGRES_USER:
-#      POSTGRES_PASSWORD:
-#      POSTGRES_DB:
-#     volumes:
-#        - ./postgresql/pgdata:/var/lib/postgresql/data
+  postgresql:
+    build: /postgresql
+    environment:
+      POSTGRES_USER:
+      POSTGRES_PASSWORD:
+      POSTGRES_DB:
+     volumes:
+        - ./postgresql/pgdata:/var/lib/postgresql/data
 

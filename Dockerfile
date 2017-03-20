@@ -31,3 +31,5 @@ RUN bundle install
 
 ADD . $HOME
 
+#rails结合docker最佳实践应该是提供api的微服务,理论上不用预编译
+#RUN bundle exec rake assets:precompile RAILS_ENV=production

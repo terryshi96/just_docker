@@ -29,3 +29,5 @@ COPY Gemfile.lock Gemfile.lock
 #bundle
 RUN bundle install
 
+ADD . $HOME
+

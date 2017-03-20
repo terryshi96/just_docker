@@ -3,6 +3,8 @@ version: '2'
 services:
   web:
     build: .
+    volumes:
+      - .:/rails_demo
     command: bundle exec
     ports:
       - "3000:3000"

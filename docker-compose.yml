@@ -10,9 +10,9 @@ services:
     command: bundle exec puma
     ports:
       - "3000:3000"
-    links:
-      - redis
-      - postgresql
+#    links:
+#      - redis
+#      - postgresql
 
 #  redis:
 #    image: redis:3.2

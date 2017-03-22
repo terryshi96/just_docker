@@ -3,6 +3,7 @@
 ```
 https://get.daocloud.io/boot2docker/osx-installer/
 https://jxus37ad.mirror.aliyuncs.com
+https://github.com/docker/compose/releases
 ```
 
 - 通过Dockerfile构建rails环境,Dockerfile由运维编写

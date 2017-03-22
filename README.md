@@ -13,3 +13,6 @@ https://github.com/docker/compose/releases
 - commit触发CI/CD,之后构建镜像,上传到镜像仓库,服务器端进行镜像的拉取更新(通过触发ansible分发服务器端的compose文件)
 - 使用docker的服务最佳实践应该是作为一个微服务提供api服务,个人认为不适合巨石系统,这样的系统依赖多,构建复杂
 
+```
+Rails new . --force --database=postgresql --skip-bundle
+```

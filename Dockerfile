@@ -15,9 +15,7 @@ ENV HOME /rails_demo
 ENV RAILS_ENV production
 
 #创建目录
-RUN mkdir $HOME
-#创建pid目录
-RUN mkdir -p $HOME/tmp/pids
+RUN mkdir $HOME && mkdir -p $HOME/tmp/pids
 
 #设置工作目录
 WORKDIR $HOME

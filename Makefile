@@ -1,4 +1,3 @@
-Rake = docker-compose run --rm app bundle exec rake
 Rails = docker-compose run --rm app rails
 
 restart:
@@ -8,7 +7,7 @@ start:
 status:
 	@docker-compose ps
 stop:
-	@docker-compose stop web app worker
+	@docker-compose stop app
 stop-all:
 	@docker-compose down
 console:

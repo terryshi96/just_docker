@@ -22,7 +22,6 @@ WORKDIR $HOME
 
 #添加Gemfile
 COPY Gemfile Gemfile
-COPY Gemfile.lock Gemfile.lock
 
 #bundle
 RUN bundle install

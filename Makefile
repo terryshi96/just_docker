@@ -1,8 +1,6 @@
 Rake = docker-compose run --rm app bundle exec rake
 Rails = docker-compose run --rm app rails
 
-build:
-    @docker-compose build
 restart:
 	@make stop && make start
 start:
@@ -14,8 +12,9 @@ stop:
 stop-all:
 	@docker-compose down
 console:
-	@$(RUN) bundle exec rails console
+	@$(Rails) console
 clean:
 	@echo "Clean Docker images..."
 	@docker ps -aqf status=exited | xargs docker rm && docker images -qf dangling=true | xargs docker rmi
-
+build:
+	@docker-compose build

@@ -14,7 +14,7 @@ https://github.com/docker/compose/releases
 - 使用docker的服务最佳实践应该是作为一个微服务提供api服务,个人认为不适合巨石系统,这样的系统依赖多,构建复杂
 
 ```
-alias drails='docker-compose run --rm rails'
+alias drails='docker-compose run --rm app rails'
 drails new . --force --database=postgresql --skip-bundle
 drails db:migrate
 ```

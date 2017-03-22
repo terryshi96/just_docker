@@ -15,4 +15,6 @@ https://github.com/docker/compose/releases
 
 ```
 alias drails='docker-compose run --rm rails'
+drails new . --force --database=postgresql --skip-bundle
+drails db:migrate
 ```

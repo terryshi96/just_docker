@@ -1,4 +1,5 @@
 .git
+.git/*
 .dockerignore
 .gitignore
 README.md

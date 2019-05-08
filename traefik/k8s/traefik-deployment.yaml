@@ -1,0 +1,107 @@
+---
+# kubernetes api 授权
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: traefik-ingress-controller
+  namespace: xxx
+
+---
+# 使用configMap配置
+# 使用DaemonSet部署
+# DaemonSet allows you to access any Node directly on Port 80 and 443, where you have to setup a Service object with a Deployment.
+apiVersion: extensions/v1beta1
+kind: DaemonSet
+metadata:
+  namespace: xxx
+  name: traefik-ingress-controller
+  labels:
+    k8s-app: traefik-ingress-lb
+spec:
+  template:
+    metadata:
+      labels:
+        k8s-app: traefik-ingress-lb
+        name: traefik-ingress-lb
+    spec:
+      serviceAccountName: traefik-ingress-controller
+      terminationGracePeriodSeconds: 60
+      hostNetwork: true
+      containers:
+        - image: traefik
+          # 环境变量
+          env:
+            - name: DNSPOD_API_KEY
+              value: "xxxx,yyyyyyyyyyyy"
+          name: traefik-ingress-lb
+          volumeMounts:
+            - mountPath: "/config"
+              name: "config"
+            - mountPath: "/acme.json"
+              name: acme
+            - mountPath: "/ssl"
+              name: ssl
+          args:
+            - --configfile=/config/traefik.toml
+            - --api
+            - --kubernetes
+            # - --logLevel=ERROR
+          ports:
+            - name: http
+              containerPort: 80
+              hostPort: 80
+            - name: https
+              containerPort: 443
+              hostPort: 443
+            # 管理界面端口不对外暴露，使用ingress进行转发
+            - name: admin
+              containerPort: 8080
+          securityContext:
+            privileged: true
+      volumes:
+        - name: config
+          configMap:
+            name: traefik-conf
+        - name: acme
+          hostPath:
+            path: /www/data/traefik/acme.json
+        - name: ssl
+          hostPath:
+            path: /www/data/traefik/ssl
+      nodeSelector:
+        kubernetes.io/hostname: xxxx
+
+
+# 使用traefik做 traefik管理界面的反向代理
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: traefik-web-ui
+  namespace: xxx
+spec:
+  selector:
+    k8s-app: traefik-ingress-lb
+  ports:
+  - name: traefik
+    port: 8080
+    targetPort: 8080
+
+---
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: traefik-web-ui
+  namespace: xxx
+  annotations:
+    kubernetes.io/ingress.class: traefik
+    ingress.kubernetes.io/auth-type: "basic"
+    ingress.kubernetes.io/auth-secret: "traefik-auth"
+spec:
+  rules:
+  - host: www.xxxx.com
+    http:
+      paths:
+      - backend:
+          serviceName: traefik-web-ui
+          servicePort: traefik

@@ -1,0 +1,36 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: redis
+  namespace: xxx
+spec:
+  ports:
+  - port: 6379
+  selector:
+    app: redis
+---
+apiVersion: apps/v1beta2 # for versions before 1.9.0 use apps/v1beta2
+kind: Deployment
+metadata:
+  name: redis
+  namespace: xxx
+spec:
+  selector:
+    matchLabels:
+      app: redis
+  template:
+    metadata:
+      labels:
+        app: redis
+    spec:
+      containers:
+      - image: redis
+        name: redis
+        args: ["--requirepass", "xxxx"]
+        ports:
+        - containerPort: 6379
+      # 容器分配策略，根据node标签分配
+      nodeSelector:
+        kubernetes.io/hostname: xxxx
+      # 容器重启策略
+      restartPolicy: Always

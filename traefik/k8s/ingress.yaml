@@ -1,0 +1,71 @@
+---
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: xxxx
+  namespace: xxx
+  annotations:
+    kubernetes.io/ingress.class: traefik
+    traefik.frontend.priority: "2"
+spec:
+  rules:
+  - host: www.xxxx.com
+    http:
+      paths:
+      -  backend:
+          serviceName: xxxx
+          servicePort: 5400
+  - host: www.yyyy.com
+    http:
+      paths:
+      -  backend:
+          serviceName: yyyy
+          servicePort: 5400
+
+---
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: xxxx
+  namespace: xxx
+  annotations:
+    kubernetes.io/ingress.class: traefik
+    traefik.frontend.priority: "2"
+    traefik.frontend.redirect.regex: ^http://(www.)?xxx.com/$
+    traefik.frontend.redirect.replacement: https://www.xxx.com/
+spec:
+  rules:
+  - host: www.xxxx.com
+    http:
+      paths:
+      -  backend:
+          serviceName: xxx
+          servicePort: 5400
+  - host: xxxx.com
+    http:
+      paths:
+      -  backend:
+          serviceName: xxx
+          servicePort: 5400
+
+
+
+---
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: wildcard
+  namespace: xxx
+  annotations:
+    kubernetes.io/ingress.class: traefik
+    traefik.frontend.priority: "1"
+    traefik.frontend.redirect.regex: ^http(s)?
+    traefik.frontend.redirect.replacement: https
+spec:
+  rules:
+  - host: "*.xxx.com"
+    http:
+      paths:
+      -  backend:
+          serviceName: xxx
+          servicePort: 5400

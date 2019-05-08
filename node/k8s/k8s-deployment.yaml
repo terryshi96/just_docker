@@ -1,0 +1,75 @@
+apiVersion: apps/v1beta2 # for versions before 1.9.0 use apps/v1beta2
+# 部署策略默认为rolling update
+kind: Deployment
+metadata:
+  name: xxx
+  namespace: xxx
+spec:
+  # .spec.selector 必须匹配 .spec.template.metadata.labels
+  selector:
+    matchLabels:
+      app: xxx
+  #replicas: 2  #tells deployment to run 2 pods matching the template
+  # 保留5份部署记录
+  revisionHistoryLimit: 1
+  template: # create pods using pod definition in this template
+    metadata:
+      labels:
+        app: xxx
+    spec:
+      containers:
+      - name: xxx
+        image: xxxx/sit:${BUILD_NUMBER}
+        # 环境变量
+        env:
+          - name: NODE_ENV
+            value: xxx
+        # 端口
+        ports:
+        - containerPort: 5400
+        #    容器内存使用限制
+        resources:
+            limits:
+              memory: "1000Mi"
+            requests:
+              memory: "300Mi"
+        # 数据卷
+        volumeMounts:
+        - name: xxx-storage
+          mountPath: /app/log
+        # 存活探查
+        livenessProbe:
+          tcpSocket:
+            port: 5400
+          initialDelaySeconds: 15
+          periodSeconds: 20
+        readinessProbe:
+          tcpSocket:
+            port: 5400
+          initialDelaySeconds: 5
+          periodSeconds: 20
+      volumes:
+      - name: xxx-storage
+        hostPath:
+          path: /www/logs/xxx-logs         
+      # 私有库身份secrets
+      imagePullSecrets:
+      - name: regcred
+      # 容器分配策略，根据node标签分配
+      nodeSelector:
+        kubernetes.io/hostname: xxxx
+      # 容器重启策略
+      restartPolicy: Always
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: xxx
+  namespace: xxx
+spec:
+  ports:
+    - port: 5400
+      targetPort: 5400
+  selector:
+    app: xxx

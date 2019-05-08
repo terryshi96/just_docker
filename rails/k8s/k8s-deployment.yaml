@@ -61,3 +61,16 @@ spec:
         kubernetes.io/hostname: s1.xxx.com
       # 容器重启策略
       restartPolicy: Always
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: xxx-dit
+  namespace: xxx
+spec:
+  ports:
+    - port: 3000
+      targetPort: 3000
+  selector:
+    app: xxx-sit

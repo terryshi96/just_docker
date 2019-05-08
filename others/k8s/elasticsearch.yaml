@@ -1,0 +1,75 @@
+# ---
+# apiVersion: v1
+# kind: ConfigMap
+# metadata:
+#   labels:
+#     product: k8s-elastic-dev
+#   name: elastic-dev-config
+#   namespace: xxx
+# data:
+#   elasticsearch.yaml: |
+#     discovery.type: single-node
+---
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: elasticsearch-dev
+  namespace: xxx
+spec:
+  selector:
+    matchLabels:
+      app: elasticsearch-dev
+  template:
+    metadata:
+      labels:
+        app: elasticsearch-dev
+    spec:
+      initContainers:
+      - name: set-vm-sync-limit
+        image: busybox
+        imagePullPolicy: IfNotPresent
+        command: ["sysctl", "-w", "vm.max_map_count=262144"]
+        securityContext:
+          privileged: true
+      containers:
+      - image: elasticsearch:6.4.3
+        name: elasticsearch
+        imagePullPolicy: IfNotPresent
+        env:
+          # Use secret in real usage
+        - name: ES_JAVA_OPTS
+          value: '-Xms1024m -Xmx1024m'
+        ports:
+        - containerPort: 9200
+          protocol: TCP
+        volumeMounts:
+          # - name: elastic-dev-config
+          #   mountPath: /etc/elasticsearch/elasticsearch.yaml
+          #   subPath: elasticsearch.yaml
+          - name: elastic-storage
+            mountPath: /usr/share/elasticsearch/data
+      volumes:
+      # - name: elastic-dev-config
+      #   configMap:
+      #     name: elastic-dev-config
+      - name: elastic-storage
+        hostPath:
+          path: /data/elasticsearch_dev_data
+      nodeSelector:
+        kubernetes.io/hostname: xxxx
+      restartPolicy: Always
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: elasticsearch-dev
+  namespace: xxx
+spec:
+  ports:
+    - port: 9200
+      targetPort: 9200
+      nodePort: 30020
+  selector:
+    app: elasticsearch-dev
+  type: NodePort
+

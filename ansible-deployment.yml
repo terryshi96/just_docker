@@ -1,0 +1,97 @@
+---
+# ansible-playbook deployment.yml --extra-vars "branch=sit"
+# ansible-playbook -C deployment.yml --extra-vars "branch=sit"
+# environment下目录名与分支对应 用于软链配置
+- hosts: xxx
+  remote_user: xxx
+  vars:
+  # 通用配置参数
+    app_user: xxx
+    group: xxx
+    project_name: xxx
+    # 镜像仓库配置
+    registry_url: registry-vpc.cn-shanghai.aliyuncs.com
+    registry_username: xxx
+    registry_password: xxx
+    # 代码仓库配置
+    repo_prefix: xxx
+    repo_url: "{{ repo_prefix }}/{{ group }}/{{ project_name }}.git"
+    producton_config_repo_url: "{{ repo_prefix }}/xxx/{{ project_name }}-{{ branch }}"
+    # 路径配置
+    app_path: /www/{{ app_user }}/apps/{{ project_name }}/{{ branch }}
+    log_path: /www/{{ app_user }}/logs/{{ project_name }}/{{ branch }}
+    # 时间戳tag
+    tag: "{{ ansible_date_time.iso8601_basic_short }}"
+
+  # 非通用配置参数
+    config_dict: {
+      "sit": {
+        "port": 25001,
+        "replicas": 1
+      },
+      "production": {
+        "port": 26001,
+        "replicas": 1
+      }
+    }
+    app_port: '{{ config_dict[branch].port }}'
+    replicas: '{{ config_dict[branch].replicas }}'
+
+  tasks:
+# 日志进行统一存储
+  - name: check log dir
+    file: path={{ log_path }} state=directory mode=0755 owner={{ app_user }} group={{ app_user }}
+
+# repo不存在则clone 若存在则git pull
+  - name: app code update
+    git:
+      repo: "{{ repo_url }}"
+      dest: "{{ app_path }}"
+      version: "{{ branch }}"
+      force: yes
+      accept_hostkey: yes
+
+# 生产环境单独拉取配置
+  - name: production config code update
+    git:
+      repo: "{{ producton_config_repo_url }}"
+      dest: "{{ app_path }}/environments/{{ branch }}"
+      force: yes
+      accept_hostkey: yes
+    when: branch == "production"
+
+# 针对rails 5.2的特殊处理
+  - name: copy master.key
+    copy: src=config/master.key dest={{ app_path }}/config/master.key
+
+  - name: copy id_rsa
+    shell: cp ~/.ssh/id_rsa {{ app_path }}/id_rsa
+
+# 软链配置
+  - name: soft link config file
+    shell: "cd {{ app_path }} && lnfs_files.sh {{ branch }}"
+
+# 登录镜像仓库
+  - name: Log into private registry and force re-authorization
+    docker_login:
+      registry: "{{ registry_url }}"
+      username: "{{ registry_username }}"
+      password: "{{ registry_password }}"
+      reauthorize: yes
+
+# 构建镜像并推送到镜像库
+  - name: Build image and push it to private repo
+    docker_image:
+      path: "{{ app_path }}"
+      # buildargs:
+      name: "{{ registry_url }}/{{ app_user }}/{{ project_name }}-{{ branch }}"
+      tag: "{{ tag }}"
+      push: yes
+
+# 拷贝模板
+  - name: copy docker-compose.yml
+    template: src=docker-compose.yml.j2 dest={{ app_path }}/docker-compose.yml
+
+# 在测试中的2.8版本有stack模块可以直接使用，目前2.7版本只能使用shell调用
+  - name: deploy to swarm
+    shell: cd {{ app_path }} && docker stack deploy --with-registry-auth -c docker-compose.yml {{project_name}}-{{ branch }}

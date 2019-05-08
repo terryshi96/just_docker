@@ -1,0 +1,58 @@
+version: '3.7'
+# deploy模式下 不支持env_file
+services:
+  {{ project_name }}-{{ branch }}:
+    image: {{ registry_url }}/{{ app_user }}/{{ project_name }}-{{ branch }}:{{ tag }}
+    ports:
+      - {{ app_port }}:3000
+    volumes:
+      - {{ log_path }}:/app/log
+    networks:
+      - net
+    deploy:
+      replicas: {{ replicas }}
+#      resources:
+#        limits:
+#        cpus: '0.50'
+#        memory: 50M
+#      reservations:
+#        cpus: '0.25'
+#        memory: 20M
+      update_config:
+        parallelism: 1
+        order: start-first
+        failure_action: rollback
+        monitor: 15s
+      rollback_config:
+        order: start-first
+      restart_policy:
+        condition: any
+
+  {{ project_name }}-{{ branch }}-sidekiq:
+    image: {{ registry_url }}/{{ app_user }}/{{ project_name }}-{{ branch }}:{{ tag }}
+    command: bundle exec sidekiq -C config/sidekiq.yml
+    volumes:
+      - {{ log_path }}:/app/log
+    networks:
+      - net
+    deploy:
+      replicas: {{ replicas }}
+#      resources:
+#        limits:
+#        cpus: '0.50'
+#        memory: 50M
+#      reservations:
+#        cpus: '0.25'
+#        memory: 20M
+      update_config:
+        parallelism: 1
+        order: start-first
+        failure_action: rollback
+        monitor: 15s
+      rollback_config:
+        order: start-first
+      restart_policy:
+        condition: any
+networks:
+  net:
+    name: shared_network

@@ -2,11 +2,12 @@
 FROM ruby:2.6.0-preview3-alpine3.8
 
 # 刷新deian源
-#RUN mv /etc/apt/sources.list /etc/apt/sources.list.bak && \
-#    echo "deb https://hub.qiniu.com/store/library/debian jessie main non-free contrib" >/etc/apt/sources.list && \
-#    echo "deb https://hub.qiniu.com/store/library/debian jessie-proposed-updates main non-free contrib" >>/etc/apt/sources.list && \
-#    echo "deb-src https://hub.qiniu.com/store/library/debian jessie main non-free contrib" >>/etc/apt/sources.list && \
-#    echo "deb-src https://hub.qiniu.com/store/library/debian jessie-proposed-updates main non-free contrib" >>/etc/apt/sources.list
+# RUN echo "deb http://mirrors.aliyun.com/debian/ stretch main non-free contrib" >/etc/apt/sources.list && \
+#     echo "deb http://mirrors.aliyun.com/debian/ stretch-updates main non-free contrib" >>/etc/apt/sources.list && \
+#     echo "deb http://mirrors.aliyun.com/debian-security/ stretch/updates main non-free contrib" >>/etc/apt/sources.list && \
+#     echo "deb-src http://mirrors.aliyun.com/debian/ stretch main non-free contrib" >>/etc/apt/sources.list && \
+#     echo "deb-src http://mirrors.aliyun.com/debian/ stretch-updates main non-free contrib" >>/etc/apt/sources.list && \
+#     echo "deb-src http://mirrors.aliyun.com/debian-security/ stretch/updates main non-free contrib" >>/etc/apt/sources.list
 
 # 修改alpine源
 RUN cp /etc/apk/repositories /etc/apk/repositories.bak && \
@@ -52,5 +53,9 @@ RUN rm -f /root/.ssh/id_rsa
 #添加代码
 ADD . $HOME
 
+ENV RAILS_ENV production
+
 # 编译资产
-RUN bundle exec rake assets:precompile RAILS_ENV=production
+RUN bundle exec rake assets:precompile
+
+CMD puma -C config/puma.rb

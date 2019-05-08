@@ -1,33 +1,30 @@
 version: '2'
 
 services:
+  redis:
+    image: redis
+    command: redis-server --requirepass 'xxxx' --appendonly yes
+    volumes:
+      - ./data/redis:/data
+
+  postgresql:
+    image: postgres
+    environment:
+      POSTGRES_DB: xxxxx
+      POSTGRES_USER: xxxxx
+      POSTGRES_PASSWORD: xxxxxx
+    ports:
+      - "5432:5432"
+    volumes:
+      - ./data/postgres:/var/lib/postgresql/data
+
   app:
     build: .
-    env_file:
-      - app.local.env
-    volumes:
-      - .:/rails_demo
-    command: bundle exec puma
     ports:
-      - "3000:3000"
-    links:
-#      - redis
-      - postgresql
-
-#  redis:
-#    image: redis:3.2
-#    environment:
-#      PASSWORD:
-#    command: redis-server --requirepass $PASSWORD
-#    volumes:
-#      - ./data/redis:/data
-#
-  postgresql:
-    image: postgres:9.6.2
-    environment:
-      POSTGRES_USER:  test
-      POSTGRES_PASSWORD:  test
-      POSTGRES_DB: test
+      - 3000:3000
     volumes:
-        - ./data/postgres:/var/lib/postgresql/data
-
+      - ./log:/app/log
+    depends_on: 
+      - redis
+      - postgresql
+    entrypoint: ./entrypoint.sh

@@ -3,6 +3,10 @@
 .git/*
 .dockerignore
 .gitignore
+Dockerfile
+deployment.yml
 README.md
 data
 data/*
+log
+log/*

@@ -1,0 +1,63 @@
+apiVersion: apps/v1beta2 # for versions before 1.9.0 use apps/v1beta2
+# 部署策略默认为rolling update
+kind: Deployment
+metadata:
+  name: xxx-dit
+  namespace: xxx
+spec:
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 0
+      maxSurge: 1
+  progressDeadlineSeconds: 120
+  # 保留2份部署记录
+  revisionHistoryLimit: 2
+  # .spec.selector 必须匹配 .spec.template.metadata.labels
+  selector:
+    matchLabels:
+      app: xxx-dit
+  #replicas: 2  #tells deployment to run 2 pods matching the template
+  template: # create pods using pod definition in this template
+    metadata:
+      labels:
+        app: xxx-dit
+    spec:
+      containers:
+      - name: xxx-dit
+        image: xxx-dit:${BUILD_NUMBER}
+        ports:
+        - containerPort: 3000
+        # 容器内存使用限制
+        resources:
+            limits:
+              memory: "1000Mi"
+            requests:
+              memory: "300Mi"
+        # 数据卷
+        volumeMounts:
+        - name: xxx-dit-storage
+          mountPath: /app/log
+        # 存活探查
+        livenessProbe:
+          tcpSocket:
+            port: 3000
+          initialDelaySeconds: 15
+          periodSeconds: 20
+        readinessProbe:
+          tcpSocket:
+            port: 3000
+          initialDelaySeconds: 5
+          periodSeconds: 20
+      volumes:
+      - name: xxx-dit-storage
+        hostPath:
+          path: /www/logs/dit-logs
+      # 私有库身份secrets
+      imagePullSecrets:
+      - name: regcred
+      # 容器分配策略，根据node标签分配
+      nodeSelector:
+        kubernetes.io/hostname: s1.xxx.com
+      # 容器重启策略
+      restartPolicy: Always
